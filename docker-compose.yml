@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: caseware-postgres
+    environment:
+      POSTGRES_DB: interop
+      POSTGRES_USER: interop
+      POSTGRES_PASSWORD: interop
+    ports:
+      - "5432:5432"
+    volumes:
+      # init.sql is auto-applied by the postgres entrypoint on first boot of an
+      # empty data dir. The 01_ prefix preserves load order if more files are added.
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interop -d interop"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  postgres_data:
